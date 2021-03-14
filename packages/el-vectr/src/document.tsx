@@ -1,4 +1,4 @@
-import { useReducer } from 'react';
+import React, { useReducer } from 'react';
 
 export interface Document {
 	paths: string[];
@@ -52,10 +52,23 @@ default export Component;
 `;
 	}
 
+	const toCompiled = () => {
+		return 'To be implemented...';
+	}
+
+	const SvgComponent : React.FC = ({ children }) => {
+		return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800">
+			<path stroke='black' d={doc.paths.join(' ')}/>
+			{children}
+		</svg>;
+	}
+
 	return {
 		doc,
 		addPath,
 		toCode,
+		toCompiled,
+		SvgComponent,
 	};
 }
 
