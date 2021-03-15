@@ -1,16 +1,31 @@
-import React  from 'react';
+import React, { useState } from 'react';
 import useDocument, { Document } from './document';
 import Line from './tool/line';
 
-const Toolbar : React.FC = ({ children }) => {
-	return <div>
+interface ToolbarProps {
+	onChange: (str: string) => void;
+}
+
+const Toolbar : React.FC<ToolbarProps> = ({ onChange, children }) => {
+	const onChangeInternal = (e : any) => {
+		onChange(e.target.value);
+	}
+
+	return <div onChange={onChangeInternal}>
 	{children}
 	</div>;
 };
 
-const Tool : React.FC<{ children: string }> = ({ children }) => {
-	return <label><input type="radio" name="toolbar-tool" value={children} />
-	{children}
+interface ToolProps {
+ children: string;
+ value: string;
+ checked?: boolean;
+}
+
+const Tool : React.FC<ToolProps> = ({ children, value, checked=false }) => {
+	return <label>
+		<input type="radio" name="toolbar-tool" value={value} defaultChecked={checked} />
+		<span>{children}</span>
 	</label>;
 };
 
@@ -31,6 +46,12 @@ const Canvas : React.FC<CanvasProps> = ({ doc, addPath, SvgComponent, Tool }) =>
 	return <Tool doc={doc} addPath={addPath}>{RenderComp}</Tool>
 };
 
+const NoTool : React.FC = () => {
+	return <div>
+		Tool not implemented
+	</div>;
+}
+
 const App : React.FC = () => {
 	const {
 		doc,
@@ -39,16 +60,26 @@ const App : React.FC = () => {
 		toCompiled,
 		SvgComponent,
 	} = useDocument();
+	const [ tool, setTool ] = useState<Function>(() => Line);
+	const onChange = (type: string) => {
+		switch(type) {
+			case 'line':
+				setTool(() => Line);
+			break;
+			default:
+				setTool(() => NoTool);
+		}
+	}
 
   return (
 		<div>
 			<h1> Canvas </h1>
-			<Toolbar>
-				<Tool>Select</Tool>
-				<Tool>Line Tool</Tool>
-				<Tool>Freehand</Tool>
+			<Toolbar onChange={onChange}>
+				<Tool value="select">Select</Tool>
+				<Tool value="line" checked={true}>Line Tool</Tool>
+				<Tool value="freehand">Freehand</Tool>
 			</Toolbar>
-			<Canvas doc={doc} addPath={addPath} SvgComponent={SvgComponent} Tool={Line} />
+			<Canvas doc={doc} addPath={addPath} SvgComponent={SvgComponent} Tool={tool} />
 			<h1> Source </h1>
 			<pre><code>{toCode()}</code></pre>
 			<h1> Compiled </h1>
